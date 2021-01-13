@@ -1,4 +1,6 @@
 
+from sys import platform as sys_platform
+
 from PySide6.QtWidgets import QMainWindow, QSystemTrayIcon, QApplication, QStyle, QMenu
 from PySide6.QtGui import QAction
 
@@ -7,7 +9,9 @@ class TrayedMainWindow(QMainWindow):
         super().__init__()
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
-        self.tray_icon.setContextMenu(self.create_tray_icon_context_menu())
+        if sys_platform != 'darwin':
+            self.tray_icon.setContextMenu(self.create_tray_icon_context_menu())
+        self.tray_icon.activated.connect(self.show)
         self.tray_icon.show()
 
     def create_tray_icon_context_menu(self):
@@ -21,6 +25,11 @@ class TrayedMainWindow(QMainWindow):
         tray_menu.addAction(quit_action)
         tray_menu.addSeparator()
         return tray_menu
+
+    def show(self):
+        super().show()
+        self.activateWindow()
+        self.raise_()
 
     def closeEvent(self, event):
         event.ignore()
