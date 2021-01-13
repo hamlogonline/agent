@@ -8,11 +8,24 @@ class TrayedMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
+        self.update_tray_icon_image()
+        self.update_tray_icon_tooltip()
         if sys_platform != 'darwin':
             self.tray_icon.setContextMenu(self.create_tray_icon_context_menu())
         self.tray_icon.activated.connect(self.show)
         self.tray_icon.show()
+
+    def get_current_tray_icon_image(self):
+        return self.style().standardIcon(QStyle.SP_ComputerIcon)
+
+    def update_tray_icon_image(self):
+        self.tray_icon.setIcon(self.get_current_tray_icon_image())
+
+    def get_tray_icon_tooltip(self):
+        return "Default tooltip"
+
+    def update_tray_icon_tooltip(self):
+        self.tray_icon.setToolTip(self.get_tray_icon_tooltip())
 
     def create_tray_icon_context_menu(self):
         tray_menu = QMenu()
