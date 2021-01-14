@@ -1,6 +1,6 @@
 from logging import Handler as LoggingHandler, Formatter as LogFormatter, getLogger
 
-from PySide6.QtWidgets import QWidget, QPlainTextEdit, QVBoxLayout, QGroupBox
+from PySide2.QtWidgets import QWidget, QPlainTextEdit, QVBoxLayout, QGroupBox
 
 from constants import APPLICATION_LOG_FORMAT, APPLICATION_LOG_LEVEL
 

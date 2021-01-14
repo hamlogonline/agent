@@ -1,5 +1,5 @@
-from PySide6.QtCore import QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide2.QtCore import QUrl
+from PySide2.QtGui import QDesktopServices
 from settings import application_settings
 from Utils import with_log
 

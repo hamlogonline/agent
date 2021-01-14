@@ -1,5 +1,5 @@
 from Utils import with_log
-from PySide6.QtCore import QSettings
+from PySide2.QtCore import QSettings
 
 @with_log
 class ApplicationSettings():

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy
 
 from .trayed_main_window import TrayedMainWindow
 from .status_widget import StatusWidget

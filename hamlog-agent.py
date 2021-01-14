@@ -3,8 +3,8 @@
 """ hamlog-agent: desktop agent software for Hamlog online logging platform """
 
 from sys import exit as sys_exit
-from PySide6.QtCore import QCoreApplication
-from PySide6.QtWidgets import QApplication
+from PySide2.QtCore import QCoreApplication
+from PySide2.QtWidgets import QApplication
 from qasync import QEventLoop
 from asyncio import set_event_loop
 

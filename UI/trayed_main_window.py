@@ -1,8 +1,7 @@
 
 from sys import platform as sys_platform
 
-from PySide6.QtWidgets import QMainWindow, QSystemTrayIcon, QApplication, QStyle, QMenu
-from PySide6.QtGui import QAction
+from PySide2.QtWidgets import QMainWindow, QSystemTrayIcon, QApplication, QStyle, QMenu, QAction
 
 class TrayedMainWindow(QMainWindow):
     def __init__(self):

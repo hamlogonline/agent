@@ -8,4 +8,3 @@ pyinstaller\
     --windowed\
     --osx-bundle-identifier 'com.hamlog.agent'\
     hamlog-agent.py || exit
-
