@@ -22,17 +22,17 @@ class TrayedMainWindow(QMainWindow):
         self.tray_icon.setIcon(self.get_current_tray_icon_image())
 
     def get_tray_icon_tooltip(self):
-        return "Default tooltip"
+        return self.tr("Default tooltip")
 
     def update_tray_icon_tooltip(self):
         self.tray_icon.setToolTip(self.get_tray_icon_tooltip())
 
     def create_tray_icon_context_menu(self):
         tray_menu = QMenu()
-        show_action = QAction("Show", self)
+        show_action = QAction(self.tr("Show"), self)
         show_action.triggered.connect(self.show)
         tray_menu.addAction(show_action)
-        quit_action = QAction("Exit", self)
+        quit_action = QAction(self.tr("Exit"), self)
         qApplication = QApplication.instance()
         quit_action.triggered.connect(qApplication.quit)
         tray_menu.addAction(quit_action)
