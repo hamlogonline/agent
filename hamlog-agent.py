@@ -3,20 +3,29 @@
 """ hamlog-agent: desktop agent software for Hamlog online logging platform """
 
 from sys import exit as sys_exit
-from PySide2.QtCore import QCoreApplication
+from PySide2.QtCore import QCoreApplication, QEvent
 from PySide2.QtWidgets import QApplication
 from qasync import QEventLoop
 from asyncio import set_event_loop
 
 from constants import APPLICATION_NAME, APPLICATION_ORGANIZATION_NAME, APPLICATION_ORGANIZATION_DOMAIN
-
 from UI import MainWindow
+from Hamlog import hamlog_client
+from Utils import with_log
+
+@with_log
+class HamlogAgentApplication(QApplication):
+    def event(self, ev):
+        if ev.type() == QEvent.FileOpen:
+            return hamlog_client.process_url_scheme(ev.url().toString())
+        else:
+            return super().event(ev)
 
 if __name__ == '__main__':
     QCoreApplication.setApplicationName(APPLICATION_NAME)
     QCoreApplication.setOrganizationName(APPLICATION_ORGANIZATION_NAME)
     QCoreApplication.setOrganizationDomain(APPLICATION_ORGANIZATION_DOMAIN)
-    application = QApplication()
+    application = HamlogAgentApplication()
     event_loop = QEventLoop(application)
     set_event_loop(event_loop)
     mainWindow = MainWindow()

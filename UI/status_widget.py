@@ -43,12 +43,12 @@ class StatusWidget(QWidget):
             self.log.debug(f'Got authorization status: {self.is_authorized}')
             if self.is_authorized:
                 self.status_label.setText(self.tr("Authorized"))
-                self.authorization_button.setText(self.tr("Unauthorize"))
+                self.authorization_button.setText(self.tr("Deauthorize"))
             else:
                 self.status_label.setText(self.tr("Unauthorized"))
                 self.authorization_button.setText(self.tr("Authorize"))
             self.authorization_button.setEnabled(True)
-        except Exception as e:
+        except:
             self.log.exception('Failed to get authorization status')
         finally:
             if self.isVisible() and self.is_authorized:
@@ -58,6 +58,6 @@ class StatusWidget(QWidget):
     
     def authorization_button_click(self):
         if self.is_authorized:
-            hamlog_client.deauthorize_agent()
+            create_task(hamlog_client.deauthorize_agent())
         else:
             hamlog_client.authorize_agent()
