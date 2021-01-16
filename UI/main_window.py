@@ -17,7 +17,6 @@ class MainWindow(TrayedMainWindow):
         self.log.info(f'{APPLICATION_NAME} {APPLICATION_VERSION} started')
 
     def create_ui(self):
-        print(str(get_resource_path() / 'res' / 'tray_icon.png'))
         self.tray_icon.setIcon(QIcon(str(get_resource_path() / 'res' / 'tray_icon.png')))
         self.setWindowTitle(f'{self.tr(APPLICATION_NAME)} {APPLICATION_VERSION}')
         central_widget = QWidget()
