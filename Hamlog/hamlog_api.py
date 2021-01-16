@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 from aiohttp import ClientSession as HttpClientSession, ClientTimeout as HttpClientTimeout
+from ssl import create_default_context as ssl_create_default_context
+from certifi import where as get_ca_bundle_location
 from constants import APPLICATION_NAME, APPLICATION_VERSION
 
 from Utils import with_log, open_url
@@ -31,7 +33,8 @@ class HamlogAPI():
         self.log.debug(f'Sending API request: {request}')
         try:
             async with HttpClientSession(timeout=self._HTTP_TIMEOUT, headers=self._HTTP_HEADERS) as session:
-                async with session.post(self._AGENT_API_ENDPOINT_URL, json=request) as response:
+                sslcontext = ssl_create_default_context(cafile=get_ca_bundle_location())
+                async with session.post(self._AGENT_API_ENDPOINT_URL, json=request, ssl=sslcontext) as response:
                     json_response = await response.json()
                     self.log.debug(f'Got JSON response: {json_response}')
                     return json_response
