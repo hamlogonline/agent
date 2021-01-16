@@ -40,6 +40,7 @@ app = BUNDLE(coll,
              icon='icon.icns',
              bundle_identifier='com.hamlog.agent',
              info_plist={
+                 'LSUIElement': '1',
                  'CFBundleURLTypes': [
                      {
                          'CFBundleURLName': 'com.hamlog.agent',
