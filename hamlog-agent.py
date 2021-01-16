@@ -10,14 +10,14 @@ from asyncio import set_event_loop
 
 from constants import APPLICATION_NAME, APPLICATION_ORGANIZATION_NAME, APPLICATION_ORGANIZATION_DOMAIN
 from UI import MainWindow
-from Hamlog import hamlog_client
+from Hamlog import hamlog_agent
 from Utils import with_log
 
 @with_log
 class HamlogAgentApplication(QApplication):
     def event(self, ev):
         if ev.type() == QEvent.FileOpen:
-            return hamlog_client.process_url_scheme(ev.url().toString())
+            return hamlog_agent.process_url_scheme(ev.url().toString())
         else:
             return super().event(ev)
 
