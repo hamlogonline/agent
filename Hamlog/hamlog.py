@@ -5,7 +5,7 @@ from Hamlog import HamlogAPI, HamlogAPIAuthorizationError, HamlogAPIConnectionEr
 from Utils import with_log, Observable
 
 @with_log
-class HamlogAgent(Observable):
+class Hamlog(Observable):
 
     _API_RETRY_TIMEUOT = 3
     _AUTHORIZATION_UPDATE_TIMEOUT = 10
@@ -60,7 +60,7 @@ class HamlogAgent(Observable):
                 expiration_timestamp = await self._hamlog_api.get_api_key_status(self._api_key)
                 self._is_authorized = True
                 self._api_key_expiration_timestamp = expiration_timestamp
-                async_sleep(self._AUTHORIZATION_UPDATE_TIMEOUT)
+                await async_sleep(self._AUTHORIZATION_UPDATE_TIMEOUT)
             except HamlogAPIAuthorizationError:
                 self._is_authorized = False
                 self._api_key = None
@@ -88,8 +88,8 @@ class HamlogAgent(Observable):
 
     def deauthorize_agent(self):
         if self._update_authorization_status_task:
-            self._update_authorization_status_task.cancel()
-            self._update_authorization_status_task = None
+            self._authorization_status_update_task.cancel()
+            self._authorization_status_update_task = None
         if self._has_valid_api_key:
             create_task(self._hamlog_api.deauthorize_api_key(self._api_key))
             self._api_key = None
@@ -109,7 +109,7 @@ class HamlogAgent(Observable):
                     new_api_key = None
                 if new_api_key:
                     self.log.debug(f'About to update API key')
-                    create_task(self.update_api_key(new_api_key))
+                    self.update_api_key(new_api_key)
                 else:
                     self.log.warning(f'API key is missing in url: {url}')
             else:

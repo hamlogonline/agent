@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QWidget, QGroupBox, QVBoxLayout, QLabel, QPushButton
 from asyncio import create_task, sleep as async_sleep
-from Hamlog import hamlog_agent
+from Hamlog import hamlog
 from Utils import with_log
 
 @with_log
@@ -9,7 +9,7 @@ class StatusWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.create_ui()
-        hamlog_agent.add_observer('_is_authorized', self.authorization_status_did_change)
+        hamlog.add_observer('_is_authorized', self.authorization_status_did_change)
         self.update_ui()
 
     def create_ui(self):
@@ -26,7 +26,7 @@ class StatusWidget(QWidget):
         self.setLayout(layout)
 
     def update_ui(self):
-        is_authorized = hamlog_agent.is_authorized
+        is_authorized = hamlog.is_authorized
         try:
             self.authorization_button.clicked.disconnect()
         except:
@@ -45,13 +45,13 @@ class StatusWidget(QWidget):
                 self.authorization_button.setText(self.tr("Authorize"))
                 self.authorization_button.clicked.connect(self.authorize_click)
             self.authorization_button.setEnabled(True)
+        self.repaint()
 
     def authorization_status_did_change(self):
-        self.update_ui
+        self.update_ui()
 
     def authorize_click(self):
-        hamlog_agent.authorize_agent()
+        hamlog.authorize_agent()
 
     def deauthorize_click(self):
-        hamlog_agent.deauthorize_agent()
-
+        hamlog.deauthorize_agent()

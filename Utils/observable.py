@@ -5,6 +5,7 @@ class Observable():
     _observers = dict()
 
     def __setattr__(self, name, new_value):
+        super().__setattr__(name, new_value)
         if name in self._observers:
             for (func_ref, self_ref) in self._observers[name]:
                 func_ref = func_ref()
@@ -17,7 +18,6 @@ class Observable():
                     if func_ref is None:
                         continue
                     func_ref(new_value)
-        super().__setattr__(name, new_value)
 
     def add_observer(self, name, observer):
         if name in self.__dict__:
