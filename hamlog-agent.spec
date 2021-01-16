@@ -4,9 +4,8 @@ block_cipher = None
 
 
 a = Analysis(['hamlog-agent.py'],
-             pathex=['/Users/kirill/src/hamlog/agent'],
              binaries=[],
-             datas=[],
+             datas=[('res', 'res')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
