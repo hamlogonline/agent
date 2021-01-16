@@ -1,3 +1,16 @@
+aiohttp==3.7.3
+altgraph==0.17
+async-timeout==3.0.1
+attrs==20.3.0
+certifi==2020.12.5
+chardet==3.0.4
+idna==3.1
+macholib==1.14
+multidict==5.1.0
+pyinstaller==4.2
+pyinstaller-hooks-contrib==2020.11
 PySide2==5.15.2
 qasync==0.13.0
 shiboken2==5.15.2
+typing-extensions==3.7.4.3
+yarl==1.6.3
