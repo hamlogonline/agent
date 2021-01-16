@@ -37,7 +37,7 @@ coll = COLLECT(exe,
                name='HAMLOG Agent')
 app = BUNDLE(coll,
              name='HAMLOG Agent.app',
-             icon=None,
+             icon='icon.icns',
              bundle_identifier='com.hamlog.agent',
              info_plist={
                  'CFBundleURLTypes': [
