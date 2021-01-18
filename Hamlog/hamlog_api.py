@@ -48,7 +48,7 @@ class HamlogAPI():
     def get_response_error(self, response):
         return response.get('ERROR', 'Unknown error')
 
-    async def get_api_key_status(self, api_key):
+    async def get_api_key_expiration_timestamp(self, api_key):
         response = await self._send_request({
             'KEYSTATUS' : {
                 'APIKEY': api_key
