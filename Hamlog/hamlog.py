@@ -1,7 +1,8 @@
 from asyncio import create_task, sleep as async_sleep, CancelledError as AsyncioCancelledError
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
-from Hamlog import HamlogAPI, HamlogAPIAuthorizationError, HamlogAPIConnectionError
+from dataclasses import asdict as dataclass_as_dict
+from Hamlog import HamlogAPI, HamlogAPIAuthorizationError, HamlogAPIConnectionError, HamlogQSO
 from Utils import with_log, Observable
 
 @with_log
@@ -60,6 +61,8 @@ class Hamlog(Observable):
                 expiration_timestamp = await self._hamlog_api.get_api_key_expiration_timestamp(self._api_key)
                 self._is_authorized = True
                 self._api_key_expiration_timestamp = expiration_timestamp
+                test_qso = HamlogQSO(mycall='r2axztest', call='r2axz', band='40', mode='LSB', timestamp=datetime.utcnow().timestamp())
+                self.report_qso(test_qso)
                 await async_sleep(self._AUTHORIZATION_UPDATE_TIMEOUT)
             except HamlogAPIAuthorizationError:
                 self._is_authorized = False
@@ -70,7 +73,6 @@ class Hamlog(Observable):
                 async_sleep(self._API_REQUEST_RETRY_TIMEUOT)
             except AsyncioCancelledError:
                 self.log.debug('Update authorization status task cancelled')
-                break;
 
     def update_api_key(self, new_api_key):
         self.log.info(f'Got new API key: {new_api_key}')
@@ -95,6 +97,14 @@ class Hamlog(Observable):
             self._api_key = None
             self._api_key_expiration_timestamp = 0
             self._is_authorized = False
+
+    def report_qso(self, qso):
+        if not isinstance(qso, HamlogQSO):
+            raise ValueError('qso must be HamlogQSO or its subclass')
+        if self._has_valid_api_key:
+            self.log.debug(f'Reporting QSO {qso}')
+            qso_data = dataclass_as_dict(qso, dict_factory=lambda d: dict(x for x in d if x[1] is not None))
+            create_task(self._hamlog_api.report_qso(self._api_key, qso_data))
 
     def process_url_scheme(self, url):
         self.log.debug(f'Processing URL scheme request: {url}')

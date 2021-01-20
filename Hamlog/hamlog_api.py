@@ -59,8 +59,7 @@ class HamlogAPI():
             expiration_date_string = response.get('EXPIRES')
             if expiration_date_string is not None:
                 try:
-                    expiration_timestamp = int(datetime.strptime(expiration_date_string, '%d %b %Y, %H:%M:%S') \
-                        .replace(tzinfo=timezone.utc).timestamp())
+                    expiration_timestamp = int(expiration_date_string)
                     self.log.debug(f'API key expires on {expiration_timestamp}')
                     return expiration_timestamp
                 except:
@@ -73,6 +72,16 @@ class HamlogAPI():
         response = await self._send_request({
             'LOGOUT': {
                 'APIKEY': api_key
+            }
+        })
+        if not self.is_successful(response):
+            raise HamlogAPIAuthorizationError(self.get_response_error(response))
+
+    async def report_qso(self, api_key, qso_data):
+        response = await self._send_request({
+            'QSOADD': {
+                'APIKEY' : api_key,
+                'DATA' : { k.upper(): v for k, v in qso_data.items() }
             }
         })
         if not self.is_successful(response):

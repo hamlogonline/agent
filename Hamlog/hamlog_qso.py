@@ -9,7 +9,7 @@ class HamlogQSO():
     call        : str
     band        : str
     mode        : str
-    timestamp   : datetime
+    timestamp   : str
     snt         : str
     rcv         : str
 
