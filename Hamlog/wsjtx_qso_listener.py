@@ -13,7 +13,7 @@ class WsjtxQsoListener(UDPBroadcastQSOListener):
                 self.log.debug('Got WSJT-X QSO Report')
 
     def __init__(self, callback):
-        super().__init__(callback, 2334)
+        super().__init__(callback, 2237)
     
     def get_protocol(self):
         return self.WsjtxListenerProtocol(self.callback)
