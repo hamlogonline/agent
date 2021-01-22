@@ -2,7 +2,7 @@ from asyncio import create_task, sleep as async_sleep, CancelledError as Asyncio
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 from dataclasses import asdict as dataclass_as_dict
-from Hamlog import HamlogAPI, HamlogAPIAuthorizationError, HamlogAPIConnectionError, HamlogQSO
+from Hamlog import HamlogAPI, HamlogAPIAuthorizationError, HamlogAPIConnectionError, HamlogQSO, WsjtxQsoListener
 from Utils import with_log, Observable
 
 @with_log
@@ -39,6 +39,7 @@ class Hamlog(Observable):
         self._is_authorized = None
         self._hamlog_api = HamlogAPI()
         self._authorization_status_update_task = None
+        self._listeners = list()
 
     def _has_valid_api_key(self):
         if self._api_key:
@@ -127,3 +128,8 @@ class Hamlog(Observable):
         else:
             self.log.warning(f'Unsupported URL scheme in url {url}')
         return False
+
+    async def start_listeners(self):
+        wsjtx_qso_listener = WsjtxQsoListener(self.report_qso)
+        self._listeners.append(wsjtx_qso_listener)
+        await wsjtx_qso_listener.start()

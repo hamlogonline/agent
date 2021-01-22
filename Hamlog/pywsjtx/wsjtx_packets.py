@@ -1,7 +1,8 @@
-
 import struct
 import datetime
+from Utils import with_log
 
+from PySide2.QtCore import QDate, QDateTime
 
 class PacketUtil:
     @classmethod
@@ -90,6 +91,7 @@ class PacketWriter(object):
         self.write_QUInt8(color_val.blue)
         self.write_QUInt16(0)
 
+@with_log
 class PacketReader(object):
     def __init__(self, packet):
         self.ptr_pos = 0
@@ -116,6 +118,11 @@ class PacketReader(object):
         self.ptr_pos += 4
         return the_int32
 
+    def QUInt32(self):
+        self.check_ptr_bound('QUInt32', 4)   # sure we could inspect that, but that is slow.
+        (the_int32,) = struct.unpack('>L',self.packet[self.ptr_pos:self.ptr_pos+4])
+        self.ptr_pos += 4
+        return the_int32
 
     def QInt8(self):
         self.check_ptr_bound('QInt8', 1)
@@ -123,9 +130,21 @@ class PacketReader(object):
         self.ptr_pos += 1
         return the_int8
 
+    def QUInt8(self):
+        self.check_ptr_bound('QUInt8', 1)
+        (the_int8,) = struct.unpack('>B', self.packet[self.ptr_pos:self.ptr_pos+1])
+        self.ptr_pos += 1
+        return the_int8
+
     def QInt64(self):
         self.check_ptr_bound('QInt64', 8)
         (the_int64,) = struct.unpack('>q', self.packet[self.ptr_pos:self.ptr_pos+8])
+        self.ptr_pos += 8
+        return the_int64
+
+    def QUInt64(self):
+        self.check_ptr_bound('QUInt64', 8)
+        (the_int64,) = struct.unpack('>Q', self.packet[self.ptr_pos:self.ptr_pos+8])
         self.ptr_pos += 8
         return the_int64
 
@@ -143,6 +162,28 @@ class PacketReader(object):
         (str,) = struct.unpack('{}s'.format(str_len), self.packet[self.ptr_pos:self.ptr_pos + str_len])
         self.ptr_pos += str_len
         return str.decode('utf-8')
+
+#  *      QDateTime:
+#  *           QDate      qint64    Julian day number
+#  *           QTime      quint32   Milli-seconds since midnight
+#  *           timespec   quint8    0=local, 1=UTC, 2=Offset from UTC
+#  *                                                 (seconds)
+#  *                                3=time zone
+#  *           offset     qint32    only present if timespec=2
+#  *           timezone   several-fields only present if timespec=3
+#  *
+#  *      we will avoid using QDateTime fields with time zones for simplicity.
+
+    def QDateTime(self):
+        julian_day_number = self.QInt64()
+        ms_since_midnight = self.QUInt32()
+        timestamp = int((QDateTime(QDate.fromJulianDay(julian_day_number)).toMSecsSinceEpoch() + ms_since_midnight) / 1000.0)
+        timespec = self.QUInt8()
+        if timespec == 0:
+            timestamp = datetime.datetime.utcfromtimestamp(timestamp).timestamp()
+        elif timespec != 1:
+            raise ValueError(f'Unsupported timespec (timespec = {timespec})')
+        return timestamp
 
 class GenericWSJTXPacket(object):
     SCHEMA_VERSION = 3
@@ -284,11 +325,69 @@ class ReplyPacket(GenericWSJTXPacket):
         GenericWSJTXPacket.__init__(self, addr_port, magic, schema, pkt_type, id, pkt)
         # handle packet-specific stuff.
 
+# * QSO Logged    Out       5                      quint32
+#  *                         Id (unique key)        utf8
+#  *                         Date & Time Off        QDateTime
+#  *                         DX call                utf8
+#  *                         DX grid                utf8
+#  *                         Tx frequency (Hz)      quint64
+#  *                         Mode                   utf8
+#  *                         Report sent            utf8
+#  *                         Report received        utf8
+#  *                         Tx power               utf8
+#  *                         Comments               utf8
+#  *                         Name                   utf8
+#  *                         Date & Time On         QDateTime
+#  *                         Operator call          utf8
+#  *                         My call                utf8
+#  *                         My grid                utf8
+#  *                         Exchange sent          utf8
+#  *                         Exchange received      utf8
+#  *
+
+#  *      QDateTime:
+#  *           QDate      qint64    Julian day number
+#  *           QTime      quint32   Milli-seconds since midnight
+#  *           timespec   quint8    0=local, 1=UTC, 2=Offset from UTC
+#  *                                                 (seconds)
+#  *                                3=time zone
+#  *           offset     qint32    only present if timespec=2
+#  *           timezone   several-fields only present if timespec=3
+#  *
+#  *      we will avoid using QDateTime fields with time zones for simplicity.
+
+@with_log
 class QSOLoggedPacket(GenericWSJTXPacket):
     TYPE_VALUE = 5
     def __init__(self, addr_port, magic, schema, pkt_type, id, pkt):
         GenericWSJTXPacket.__init__(self, addr_port, magic, schema, pkt_type, id, pkt)
-        # handle packet-specific stuff.
+        ps = PacketReader(pkt)
+        the_type = ps.QInt32()
+        try:
+            self.wsjtx_id = ps.QString()
+            self.timestamp_off = ps.QDateTime()
+            self.dx_call = ps.QString()
+            self.dx_grid = ps.QString()
+            self.tx_freq_hz = ps.QUInt64()
+            self.mode = ps.QString()
+            self.report_send = ps.QString()
+            self.report_rcvd = ps.QString()
+            self.tx_power = ps.QString()
+            self.comments = ps.QString()
+            self.name = ps.QString()
+            self.timestamp_on = ps.QDateTime()
+            self.operator_call = ps.QString()
+            self.my_call = ps.QString()
+            self.my_grid = ps.QString()
+            self.exchange_sent = ps.QString()
+            self.exchange_rcvd = ps.QString()
+        except:
+            self.log.exception('Faield to parse QSOLoggedPacket')
+        finally:
+            self.log.debug(f'QSOLoggedPacket dict: {self.__dict__}')
+
+    def toHamlogQso(self):
+        pass
 
 class ClosePacket(GenericWSJTXPacket):
     TYPE_VALUE = 6

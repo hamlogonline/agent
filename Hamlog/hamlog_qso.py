@@ -5,14 +5,15 @@ from json import dumps as json_dumps
 @dataclass
 class HamlogQSO():
 
-    mycall      : str
-    call        : str
-    band        : str
-    mode        : str
-    timestamp   : str
-    snt         : str
-    rcv         : str
+    mycall          : str
+    call            : str
+    band            : str
+    mode            : str
+    timestamp_off   : int
+    snt             : str
+    rcv             : str
 
+    timestamp_on    : int
     contestname     : str = None
     contestnr       : str = None
     rxfreq          : str = None

@@ -6,7 +6,7 @@ from sys import exit as sys_exit
 from PySide2.QtCore import QCoreApplication, QEvent
 from PySide2.QtWidgets import QApplication
 from qasync import QEventLoop
-from asyncio import set_event_loop
+from asyncio import set_event_loop, create_task
 
 from constants import APPLICATION_NAME, APPLICATION_ORGANIZATION_NAME, APPLICATION_ORGANIZATION_DOMAIN
 from UI import MainWindow
@@ -30,5 +30,6 @@ if __name__ == '__main__':
     set_event_loop(event_loop)
     mainWindow = MainWindow()
     mainWindow.show()
+    create_task(hamlog.start_listeners())
     with event_loop:
         sys_exit(event_loop.run_forever())
