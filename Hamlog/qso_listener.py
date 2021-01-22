@@ -8,10 +8,13 @@ class QSOListener():
 
         def __init__(self, callback):
             super().__init__()
-            self._callback = callback
+            self.callback = callback
 
         def report_qso(self, qso):
-            self._callback(qso)
+            self.callback.report_qso(qso)
+
+        def report_adif(self, software_id, adif_data):
+            self.callback.report_adif(software_id, adif_data)
 
     def __init__(self, callback):
         super().__init__()

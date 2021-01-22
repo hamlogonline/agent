@@ -1,8 +1,8 @@
 import struct
 import datetime
 from Utils import with_log
-
 from PySide2.QtCore import QDate, QDateTime
+from Hamlog import HamlogQSO
 
 class PacketUtil:
     @classmethod
@@ -163,17 +163,6 @@ class PacketReader(object):
         self.ptr_pos += str_len
         return str.decode('utf-8')
 
-#  *      QDateTime:
-#  *           QDate      qint64    Julian day number
-#  *           QTime      quint32   Milli-seconds since midnight
-#  *           timespec   quint8    0=local, 1=UTC, 2=Offset from UTC
-#  *                                                 (seconds)
-#  *                                3=time zone
-#  *           offset     qint32    only present if timespec=2
-#  *           timezone   several-fields only present if timespec=3
-#  *
-#  *      we will avoid using QDateTime fields with time zones for simplicity.
-
     def QDateTime(self):
         julian_day_number = self.QInt64()
         ms_since_midnight = self.QUInt32()
@@ -325,37 +314,6 @@ class ReplyPacket(GenericWSJTXPacket):
         GenericWSJTXPacket.__init__(self, addr_port, magic, schema, pkt_type, id, pkt)
         # handle packet-specific stuff.
 
-# * QSO Logged    Out       5                      quint32
-#  *                         Id (unique key)        utf8
-#  *                         Date & Time Off        QDateTime
-#  *                         DX call                utf8
-#  *                         DX grid                utf8
-#  *                         Tx frequency (Hz)      quint64
-#  *                         Mode                   utf8
-#  *                         Report sent            utf8
-#  *                         Report received        utf8
-#  *                         Tx power               utf8
-#  *                         Comments               utf8
-#  *                         Name                   utf8
-#  *                         Date & Time On         QDateTime
-#  *                         Operator call          utf8
-#  *                         My call                utf8
-#  *                         My grid                utf8
-#  *                         Exchange sent          utf8
-#  *                         Exchange received      utf8
-#  *
-
-#  *      QDateTime:
-#  *           QDate      qint64    Julian day number
-#  *           QTime      quint32   Milli-seconds since midnight
-#  *           timespec   quint8    0=local, 1=UTC, 2=Offset from UTC
-#  *                                                 (seconds)
-#  *                                3=time zone
-#  *           offset     qint32    only present if timespec=2
-#  *           timezone   several-fields only present if timespec=3
-#  *
-#  *      we will avoid using QDateTime fields with time zones for simplicity.
-
 @with_log
 class QSOLoggedPacket(GenericWSJTXPacket):
     TYPE_VALUE = 5
@@ -377,17 +335,20 @@ class QSOLoggedPacket(GenericWSJTXPacket):
             self.name = ps.QString()
             self.timestamp_on = ps.QDateTime()
             self.operator_call = ps.QString()
-            self.my_call = ps.QString()
-            self.my_grid = ps.QString()
-            self.exchange_sent = ps.QString()
-            self.exchange_rcvd = ps.QString()
+            self.mycall = ps.QString()
+            self.mygrid = ps.QString()
+            self.snt = ps.QString()
+            self.rcv = ps.QString()
         except:
             self.log.exception('Faield to parse QSOLoggedPacket')
         finally:
             self.log.debug(f'QSOLoggedPacket dict: {self.__dict__}')
 
-    def toHamlogQso(self):
-        pass
+    def as_hamlog_qso(self):
+        return None
+#        return HamlogQSO(mycall=self.mycall, call=dx_call,
+#            band=)
+
 
 class ClosePacket(GenericWSJTXPacket):
     TYPE_VALUE = 6
@@ -449,7 +410,10 @@ class LoggedADIFPacket(GenericWSJTXPacket):
     TYPE_VALUE = 12
     def __init__(self, addr_port, magic, schema, pkt_type, id, pkt):
         GenericWSJTXPacket.__init__(self, addr_port, magic, schema, pkt_type, id, pkt)
-        # handle packet-specific stuff.
+        ps = PacketReader(pkt)
+        the_type = ps.QInt32()
+        self.wsjtx_id = ps.QString()
+        self.adif = ps.QString()
 
     @classmethod
     def Builder(cls, to_wsjtx_id='WSJT-X', adif_text=""):
@@ -493,7 +457,8 @@ class WSJTXPacketClassFactory(GenericWSJTXPacket):
         ReplayPacket.TYPE_VALUE:    ReplayPacket,
         HaltTxPacket.TYPE_VALUE:    HaltTxPacket,
         FreeTextPacket.TYPE_VALUE:  FreeTextPacket,
-        WSPRDecodePacket.TYPE_VALUE: WSPRDecodePacket
+        WSPRDecodePacket.TYPE_VALUE: WSPRDecodePacket,
+        LoggedADIFPacket.TYPE_VALUE: LoggedADIFPacket
     }
     def __init__(self, addr_port, magic, schema, pkt_type, id, pkt):
         self.addr_port = addr_port

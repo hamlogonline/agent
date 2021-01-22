@@ -87,6 +87,17 @@ class HamlogAPI():
         if not self.is_successful(response):
             raise HamlogAPIAuthorizationError(self.get_response_error(response))
 
+    async def report_adif(self, api_key, software_id, adif_data):
+        response = await self._send_request({
+            'ADIFADD': {
+                'APIKEY' : api_key,
+                'SOFRWAREID': software_id,
+                'ADIFDATA': adif_data
+            }
+        })
+        if not self.is_successful(response):
+            raise HamlogAPIAuthorizationError(self.get_response_error(response))
+
     def authorize(self):
         try:
             assert open_url(self._AGENT_AUTHORIZATION_URL) == True                
