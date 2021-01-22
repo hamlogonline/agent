@@ -107,10 +107,10 @@ class Hamlog(Observable):
             qso_data = dataclass_as_dict(qso, dict_factory=lambda d: dict(x for x in d if x[1] is not None))
             create_task(self._hamlog_api.report_qso(self._api_key, qso_data))
 
-    def report_adif(self, software_id, adif_data):
+    def report_adif(self, adif_data):
         if self._has_valid_api_key:
             self.log.debug(f'Reporting ADIF {adif_data}')
-            create_task(self._hamlog_api.report_adif(self._api_key, software_id, adif_data))
+            create_task(self._hamlog_api.report_adif(self._api_key, adif_data))
 
     def process_url_scheme(self, url):
         self.log.debug(f'Processing URL scheme request: {url}')

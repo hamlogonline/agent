@@ -11,7 +11,7 @@ class WsjtxQsoListener(UDPBroadcastQSOListener):
             wsjtx_packet = WSJTXPacketClassFactory.from_udp_packet(addr, data)
             if isinstance(wsjtx_packet, LoggedADIFPacket):
                 self.log.debug(f'Got WSJT-X ADIF QSO Report: {wsjtx_packet.adif}')
-                self.report_adif(wsjtx_packet.wsjtx_id, wsjtx_packet.adif)
+                self.report_adif(wsjtx_packet.adif)
             elif isinstance(wsjtx_packet, QSOLoggedPacket):
                 self.log.debug('Got WSJT-X QSO Report')
             

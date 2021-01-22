@@ -87,11 +87,10 @@ class HamlogAPI():
         if not self.is_successful(response):
             raise HamlogAPIAuthorizationError(self.get_response_error(response))
 
-    async def report_adif(self, api_key, software_id, adif_data):
+    async def report_adif(self, api_key, adif_data):
         response = await self._send_request({
             'ADIFADD': {
                 'APIKEY' : api_key,
-                'SOFTWAREID': software_id,
                 'ADIFDATA': adif_data
             }
         })
