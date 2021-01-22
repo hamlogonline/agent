@@ -91,7 +91,7 @@ class HamlogAPI():
         response = await self._send_request({
             'ADIFADD': {
                 'APIKEY' : api_key,
-                'SOFRWAREID': software_id,
+                'SOFTWAREID': software_id,
                 'ADIFDATA': adif_data
             }
         })
