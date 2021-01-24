@@ -72,8 +72,6 @@ class Hamlog(Observable):
                 break
             except HamlogAPIConnectionError:
                 async_sleep(self._API_REQUEST_RETRY_TIMEUOT)
-            except AsyncioCancelledError:
-                self.log.debug('Update authorization status task cancelled')
 
     def update_api_key(self, new_api_key):
         self.log.info(f'Got new API key: {new_api_key}')
