@@ -90,11 +90,10 @@ if __name__ == '__main__':
     QCoreApplication.setApplicationName(APPLICATION_NAME)
     QCoreApplication.setOrganizationName(APPLICATION_ORGANIZATION_NAME)
     QCoreApplication.setOrganizationDomain(APPLICATION_ORGANIZATION_DOMAIN)
-    if os_name == 'nt':
-        try:
-            scheme_url = sys_argv[1]
-        except:
-            scheme_url = None
+    try:
+        scheme_url = sys_argv[1]
+    except:
+        scheme_url = None
     application = HamlogAgentApplication(APPLICATION_ORGANIZATION_DOMAIN, scheme_url)
     if application.is_running():
         sys_exit(0)
