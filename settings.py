@@ -1,5 +1,6 @@
 from Utils import with_log
 from PySide2.QtCore import QSettings
+from constants import APPLICATION_ORGANIZATION_NAME, APPLICATION_NAME
 
 @with_log
 class ApplicationSettings():
@@ -9,7 +10,8 @@ class ApplicationSettings():
 
     def __init__(self):
         super().__init__()
-        self.settings = QSettings()
+        self.settings = QSettings(QSettings.Format.NativeFormat, QSettings.Scope.UserScope,
+            APPLICATION_ORGANIZATION_NAME, APPLICATION_NAME)
     
     @property
     def hamlog_api_key(self):
