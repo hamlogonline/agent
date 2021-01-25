@@ -62,8 +62,6 @@ class Hamlog(Observable):
                 expiration_timestamp = await self._hamlog_api.get_api_key_expiration_timestamp(self._api_key)
                 self._is_authorized = True
                 self._api_key_expiration_timestamp = expiration_timestamp
-                test_qso = HamlogQSO(mycall='r2axztest', call='r2axz', band='40', mode='LSB', timestamp=datetime.utcnow().timestamp())
-                self.report_qso(test_qso)
                 await async_sleep(self._AUTHORIZATION_UPDATE_TIMEOUT)
             except HamlogAPIAuthorizationError:
                 self._is_authorized = False
