@@ -19,6 +19,7 @@ class MainWindow(TrayedMainWindow):
     def create_ui(self):
         self.tray_icon.setIcon(QIcon(str(get_resource_path() / 'res' / 'tray_icon.png')))
         self.setWindowTitle(f'{self.tr(APPLICATION_NAME)} {APPLICATION_VERSION}')
+        self.setWindowIcon(QIcon(str(get_resource_path() / 'res' / 'tray_icon.png')))
         central_widget = QWidget()
         central_widget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         central_widget.setMinimumSize(800, 300)
