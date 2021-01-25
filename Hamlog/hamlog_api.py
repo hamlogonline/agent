@@ -1,3 +1,4 @@
+from asyncio import sleep as async_sleep, Event as AsyncioEvent
 from datetime import datetime, timezone
 from aiohttp import ClientSession as HttpClientSession, ClientTimeout as HttpClientTimeout
 from ssl import create_default_context as ssl_create_default_context
@@ -29,15 +30,20 @@ class HamlogAPI():
         'User-Agent': f'{(APPLICATION_NAME)} {APPLICATION_VERSION}'
     }
 
+    def __init__(self):
+        super().__init__()
+        self._ssl_context = ssl_create_default_context(cafile=get_ca_bundle_location())
+
     async def _send_request(self, request):
         self.log.debug(f'Sending API request: {request}')
         try:
             async with HttpClientSession(timeout=self._HTTP_TIMEOUT, headers=self._HTTP_HEADERS) as session:
-                sslcontext = ssl_create_default_context(cafile=get_ca_bundle_location())
-                async with session.post(self._AGENT_API_ENDPOINT_URL, json=request, ssl=sslcontext) as response:
+                closed_event = self._create_aiohttp_closed_event(session)
+                async with session.post(self._AGENT_API_ENDPOINT_URL, json=request, ssl=self._ssl_context) as response:
                     json_response = await response.json()
                     self.log.debug(f'Got JSON response: {json_response}')
                     return json_response
+            await closed_event.wait()
         except Exception as e:
             self.log.exception('Failed to perform API request')
             raise HamlogAPIConnectionError('Failed to perform API request', e)
@@ -103,3 +109,55 @@ class HamlogAPI():
         except Exception as e:
             self.log.exception('Cannot open authorization URL')
             raise HamlogAPIAuthorizationError('Cannot open authorization URL', e)
+
+    def _create_aiohttp_closed_event(self, session) -> AsyncioEvent:
+        """Work around aiohttp issue that doesn't properly close transports on exit.                                        
+                                                                                                                            
+        See https://github.com/aio-libs/aiohttp/issues/1925#issuecomment-639080209                                          
+                                                                                                                            
+        Returns:                                                                                                            
+        An event that will be set once all transports have been properly closed.                                         
+        """                                                                                                                 
+                                                                                                                        
+        transports = 0                                                                                                      
+        all_is_lost = AsyncioEvent()                                                                                       
+                                                                                                                        
+        def connection_lost(exc, orig_lost):                                                                                
+            nonlocal transports                                                                                             
+                                                                                                                            
+            try:                                                                                                            
+                orig_lost(exc)                                                                                              
+            finally:                                                                                                        
+                transports -= 1                                                                                             
+                if transports == 0:                                                                                         
+                    all_is_lost.set()                                                                                       
+                                                                                                                        
+        def eof_received(orig_eof_received):                                                                                
+            try:                                                                                                            
+                orig_eof_received()                                                                                         
+            except AttributeError:                                                                                          
+                # It may happen that eof_received() is called after                                                         
+                # _app_protocol and _transport are set to None.                                                             
+                pass                                                                                                        
+                                                                                                                            
+        for conn in session.connector._conns.values():                                                                      
+            for handler, _ in conn:                                                                                         
+                proto = getattr(handler.transport, "_ssl_protocol", None)                                                   
+                if proto is None:                                                                                           
+                    continue                                                                                                
+                                                                                                                            
+                transports += 1                                                                                             
+                orig_lost = proto.connection_lost                                                                           
+                orig_eof_received = proto.eof_received                                                                      
+                                                                                                                            
+                proto.connection_lost = functools.partial(                                                                  
+                    connection_lost, orig_lost=orig_lost                                                                    
+                )                                                                                                           
+                proto.eof_received = functools.partial(                                                                     
+                    eof_received, orig_eof_received=orig_eof_received                                                       
+                )                                                                                                           
+                                                                                                                            
+        if transports == 0:                                                                                                 
+            all_is_lost.set()                                                                                               
+                                                                                                                            
+        return all_is_lost
