@@ -27,7 +27,7 @@ class HamlogAPI():
 
     _HTTP_TIMEOUT = HttpClientTimeout(total=30)
     _HTTP_HEADERS = {
-        'User-Agent': f'{(APPLICATION_NAME)} {APPLICATION_VERSION}'
+        'User-Agent': f'{APPLICATION_NAME} {APPLICATION_VERSION}'
     }
 
     def __init__(self):

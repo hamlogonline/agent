@@ -328,8 +328,8 @@ class QSOLoggedPacket(GenericWSJTXPacket):
             self.dx_grid = ps.QString()
             self.tx_freq_hz = ps.QUInt64()
             self.mode = ps.QString()
-            self.report_send = ps.QString()
-            self.report_rcvd = ps.QString()
+            self.rst_sent = ps.QString()
+            self.rst_rcvd = ps.QString()
             self.tx_power = ps.QString()
             self.comments = ps.QString()
             self.name = ps.QString()
@@ -343,12 +343,6 @@ class QSOLoggedPacket(GenericWSJTXPacket):
             self.log.exception('Faield to parse QSOLoggedPacket')
         finally:
             self.log.debug(f'QSOLoggedPacket dict: {self.__dict__}')
-
-    def as_hamlog_qso(self):
-        return None
-#        return HamlogQSO(mycall=self.mycall, call=dx_call,
-#            band=)
-
 
 class ClosePacket(GenericWSJTXPacket):
     TYPE_VALUE = 6
