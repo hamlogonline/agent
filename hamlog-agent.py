@@ -3,14 +3,16 @@
 """ hamlog-agent: desktop agent software for Hamlog online logging platform """
 from os import name as os_name
 from sys import exit as sys_exit, argv as sys_argv
-from PySide2.QtCore import QCoreApplication, QEvent, QSettings, QUrl, QTextStream, QThread
+from PySide2.QtCore import QCoreApplication, QEvent, QSettings, QUrl, QTextStream, QThread, QStandardPaths
 from PySide2.QtGui import QFileOpenEvent
 from PySide2.QtWidgets import QApplication
 from PySide2.QtNetwork import QLocalServer, QLocalSocket
 from qasync import QEventLoop
 from asyncio import set_event_loop, create_task
+from pathlib import Path
+from logging import FileHandler, Formatter as LogFormatter, getLogger
 
-from constants import APPLICATION_NAME, APPLICATION_ORGANIZATION_NAME, APPLICATION_ORGANIZATION_DOMAIN
+from constants import APPLICATION_NAME, APPLICATION_ORGANIZATION_NAME, APPLICATION_ORGANIZATION_DOMAIN, APPLICATION_LOG_FILE_NAME, APPLICATION_LOG_FORMAT, APPLICATION_LOG_LEVEL
 from UI import MainWindow
 from Hamlog import hamlog
 from Utils import with_log
@@ -90,6 +92,16 @@ if __name__ == '__main__':
     QCoreApplication.setApplicationName(APPLICATION_NAME)
     QCoreApplication.setOrganizationName(APPLICATION_ORGANIZATION_NAME)
     QCoreApplication.setOrganizationDomain(APPLICATION_ORGANIZATION_DOMAIN)
+
+    # Set up logging
+    logging_dir = QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)
+    Path(logging_dir).mkdir(parents=True, exist_ok=True)
+    logging_handler = FileHandler(Path(logging_dir).joinpath(APPLICATION_LOG_FILE_NAME))
+    logging_handler.setFormatter(LogFormatter(APPLICATION_LOG_FORMAT))
+    logger = getLogger()
+    logger.addHandler(logging_handler)
+    logger.setLevel(APPLICATION_LOG_LEVEL)
+
     try:
         scheme_url = sys_argv[1]
     except:

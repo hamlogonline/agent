@@ -3,13 +3,24 @@ from .pywsjtx import WSJTXPacketClassFactory, QSOLoggedPacket, LoggedADIFPacket
 from .udp_broadcast_listener import UDPBroadcastQSOListener
 from datetime import datetime
 from constants import APPLICATION_NAME, APPLICATION_VERSION
+from settings import application_settings
+from socket import socket, AF_INET, SOCK_DGRAM
 
 class WsjtxQsoListener(UDPBroadcastQSOListener):
 
     class WsjtxListenerProtocol(UDPBroadcastQSOListener.UDPListenerProtocol):
 
+        def __init__(self, port):
+            super().__init__(port)
+            self._socket = socket(AF_INET, SOCK_DGRAM)
+
+        def repeat_if_needed(self, data):
+            if application_settings.wsjt_unicast_udp_repeater_enabled:
+                self._socket.sendto(data, (application_settings.wsjt_unicast_udp_repeater_addr, application_settings.wsjt_unicast_udp_repeater_port))
+
         def datagram_received(self, data, addr):
             super().datagram_received(data, addr)
+
             wsjtx_packet = WSJTXPacketClassFactory.from_udp_packet(addr, data)
             if isinstance(wsjtx_packet, QSOLoggedPacket):
                 self.log.debug(f'Got WSJT-X QSO Report, building ADIF')
@@ -95,7 +106,7 @@ class WsjtxQsoListener(UDPBroadcastQSOListener):
                 return ''
 
     def __init__(self, callback):
-        super().__init__(callback, 2237)
+        super().__init__(callback, application_settings.wsjt_unicast_udp_port)
     
     def get_protocol(self):
         return self.WsjtxListenerProtocol(self.callback)

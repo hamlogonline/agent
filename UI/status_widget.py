@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QWidget, QGroupBox, QVBoxLayout, QLabel, QPushButton
+from PySide2.QtWidgets import QWidget, QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 from asyncio import create_task, sleep as async_sleep
 from Hamlog import hamlog
 from Utils import with_log
