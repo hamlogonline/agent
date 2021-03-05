@@ -131,6 +131,9 @@ class Hamlog(Observable):
         return False
 
     async def start_listeners(self):
+        for listener in self._listeners:
+            listener.stop()
+        self._listeners = list()
         wsjtx_qso_listener = WsjtxQsoListener(self)
         self._listeners.append(wsjtx_qso_listener)
         await wsjtx_qso_listener.start()

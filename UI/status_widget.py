@@ -17,6 +17,7 @@ class StatusWidget(QWidget):
         status_group_box = QGroupBox(self.tr("Agent Status"))
         self.status_label = QLabel()
         self.authorization_button = QPushButton()
+        self.authorization_button.setFocus()
         status_vbox_layout = QVBoxLayout()
         status_vbox_layout.addWidget(self.status_label)
         status_vbox_layout.addWidget(self.authorization_button)

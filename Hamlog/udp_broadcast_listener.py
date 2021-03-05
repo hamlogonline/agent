@@ -16,6 +16,9 @@ class UDPBroadcastQSOListener(QSOListener):
         def datagram_received(self, data, addr):
             self.log.debug('Datagram received')
 
+        def connection_lost(self, exc):
+            self.log.debug(f'Connection lost: {exc}')
+
     def __init__(self, callback, port):
         super().__init__(callback)
         self.port = port

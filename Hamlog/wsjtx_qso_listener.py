@@ -39,7 +39,7 @@ class WsjtxQsoListener(UDPBroadcastQSOListener):
                 if wsjtx_packet.mode == 'FT4' or wsjtx_packet.mode == 'FST4':
                     mode = 'MFSK'
                     adif += f'<mode:{len(mode)}>{mode}'
-                    adif += f'<submode:{len(mode)}>{mode}'
+                    adif += f'<submode:{len(wsjtx_packet.mode)}>{wsjtx_packet.mode}'
                 else:
                     adif += f'<mode:{len(wsjtx_packet.mode)}>{wsjtx_packet.mode}'
                 adif += f'<rst_sent:{len(wsjtx_packet.rst_sent)}>{wsjtx_packet.rst_sent}'

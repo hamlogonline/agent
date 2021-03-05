@@ -3,6 +3,7 @@ from PySide2.QtGui import QIcon
 
 from .trayed_main_window import TrayedMainWindow
 from .status_widget import StatusWidget
+from .wsjt_settings_widget import WsjtSettingsWidget
 
 from constants import APPLICATION_NAME, APPLICATION_VERSION
 
@@ -23,7 +24,9 @@ class MainWindow(TrayedMainWindow):
         central_widget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         central_widget.setMinimumSize(800, 300)
         self.status_widget = StatusWidget()
+        self.wsjt_settings_widget = WsjtSettingsWidget()
         layout = QVBoxLayout()
+        layout.addWidget(self.wsjt_settings_widget)
         layout.addWidget(self.status_widget)
         layout.addStretch()
         central_widget.setLayout(layout)

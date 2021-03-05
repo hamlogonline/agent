@@ -60,7 +60,7 @@ class ApplicationSettings():
         return stored_unicast_udp_repeater_addr
 
     @wsjt_unicast_udp_repeater_addr.setter
-    def unicast_udp_repeater_addr(self, new_value):
+    def wsjt_unicast_udp_repeater_addr(self, new_value):
         self.log.debug(f'Storing new wsjt unicast UDP repeater addr: {new_value}')
         self.settings.setValue(self.SETTINGS_KEY_WSJT_UNICAST_UDP_REPEATER_ADDR, new_value)
 
@@ -82,7 +82,7 @@ class ApplicationSettings():
         return stored_unicast_udp_repeater_port
 
     @wsjt_unicast_udp_repeater_port.setter
-    def unicast_udp_repeater_port(self, new_value):
+    def wsjt_unicast_udp_repeater_port(self, new_value):
         self.log.debug(f'Storing new wsjt unicast UDP repeater port: {new_value}')
         self.settings.setValue(self.SETTINGS_KEY_WSJT_UNICAST_UDP_REPEATER_PORT, new_value)
 
