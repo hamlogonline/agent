@@ -20,7 +20,7 @@ class WsjtxQsoListener(UDPBroadcastQSOListener):
 
         def datagram_received(self, data, addr):
             super().datagram_received(data, addr)
-
+            self.repeat_if_needed(data)            
             wsjtx_packet = WSJTXPacketClassFactory.from_udp_packet(addr, data)
             if isinstance(wsjtx_packet, QSOLoggedPacket):
                 self.log.debug(f'Got WSJT-X QSO Report, building ADIF')

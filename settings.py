@@ -9,10 +9,12 @@ class ApplicationSettings():
     SETTINGS_KEY_HAMLOG_API_KEY_EXPIRATION_TIMESTAMP    = 'hamlog_api_key_expiration_timestamp'
     SETTINGS_KEY_WSJT_UNICAST_UDP_PORT                  = 'wsjt_unicast_udp_port'
     SETTINGS_KEY_WSJT_UNICAST_UDP_REPEATER_ENABLED      = 'wsjt_unicast_udp_repeater_enabled'
+    SETTINGS_KEY_WSJT_UNICAST_UDP_REPEATER_ADDR         = 'wsjt_unicast_udp_repeater_addr'
     SETTINGS_KEY_WSJT_UNICAST_UDP_REPEATER_PORT         = 'wsjt_unicast_udp_repeater_port'
 
     SETTINGS_DEFAULT_WSJT_UNICAST_UDP_PORT              = 2237
     SETTINGS_DEFAULT_WSJT_UNICAST_UDP_REPEATER_ENABLED  = True
+    SETTINGS_DEFAULT_WSJT_UNICAST_UDP_REPEATER_ADDR     = '127.0.0.1'
     SETTINGS_DEFAULT_WSJT_UNICAST_UDP_REPEATER_PORT     = 3373
 
     def __init__(self):
