@@ -163,15 +163,18 @@ class PacketReader(object):
         self.ptr_pos += str_len
         return str.decode('utf-8')
 
-    def QDateTime(self):
+    def QDateTime(self, is_jtdx=False):
         julian_day_number = self.QInt64()
         ms_since_midnight = self.QUInt32()
         timestamp = int((QDateTime(QDate.fromJulianDay(julian_day_number)).toMSecsSinceEpoch() + ms_since_midnight) / 1000.0)
         timespec = self.QUInt8()
+        self.log.debug(f'Got QDateTime: {julian_day_number} {ms_since_midnight} {timestamp} {timespec}')
         if timespec == 0:
-            timestamp = datetime.datetime.utcfromtimestamp(timestamp).timestamp()
+            if not is_jtdx:
+                timestamp = datetime.datetime.utcfromtimestamp(timestamp).timestamp()
         elif timespec != 1:
             raise ValueError(f'Unsupported timespec (timespec = {timespec})')
+        self.log.debug(f'Returning timestamp: {timestamp}')
         return timestamp
 
 class GenericWSJTXPacket(object):
@@ -323,7 +326,8 @@ class QSOLoggedPacket(GenericWSJTXPacket):
         the_type = ps.QInt32()
         try:
             self.wsjtx_id = ps.QString()
-            self.timestamp_off = ps.QDateTime()
+            is_jtdx = self.wsjtx_id == 'JTDX'
+            self.timestamp_off = ps.QDateTime(is_jtdx)
             self.dx_call = ps.QString()
             self.dx_grid = ps.QString()
             self.tx_freq_hz = ps.QUInt64()
@@ -333,7 +337,7 @@ class QSOLoggedPacket(GenericWSJTXPacket):
             self.tx_power = ps.QString()
             self.comments = ps.QString()
             self.name = ps.QString()
-            self.timestamp_on = ps.QDateTime()
+            self.timestamp_on = ps.QDateTime(is_jtdx)
             self.operator_call = ps.QString()
             self.mycall = ps.QString()
             self.mygrid = ps.QString()
