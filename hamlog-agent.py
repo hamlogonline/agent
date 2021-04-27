@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
 """ hamlog-agent: desktop agent software for Hamlog online logging platform """
+
+# Workaround for maxOS Big Sur
+import os
+os.environ["QT_MAC_WANTS_LAYER"] = "1"
+# end of the workaround
+
 from os import name as os_name
 from sys import exit as sys_exit, argv as sys_argv
 from PySide2.QtCore import QCoreApplication, QEvent, QSettings, QUrl, QTextStream, QThread, QStandardPaths
