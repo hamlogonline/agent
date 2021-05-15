@@ -2,7 +2,10 @@ from asyncio import sleep as async_sleep, Event as AsyncioEvent
 from datetime import datetime, timezone
 from aiohttp import ClientSession as HttpClientSession, ClientTimeout as HttpClientTimeout
 from ssl import create_default_context as ssl_create_default_context
-from certifi import where as get_ca_bundle_location
+try:
+    from certifi import where as get_ca_bundle_location
+except:
+    get_ca_bundle_location = None
 from constants import APPLICATION_NAME, APPLICATION_VERSION
 
 from Utils import with_log, open_url
@@ -32,7 +35,10 @@ class HamlogAPI():
 
     def __init__(self):
         super().__init__()
-        self._ssl_context = ssl_create_default_context(cafile=get_ca_bundle_location())
+        if get_ca_bundle_location:
+            self._ssl_context = ssl_create_default_context(cafile=get_ca_bundle_location())
+        else:
+            self._ssl_context = ssl_create_default_context()
 
     async def _send_request(self, request):
         self.log.debug(f'Sending API request: {request}')
