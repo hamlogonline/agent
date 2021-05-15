@@ -118,9 +118,9 @@ if __name__ == '__main__':
     application.register_url_scheme()
     event_loop = QEventLoop(application)
     set_event_loop(event_loop)
-    mainWindow = MainWindow()
-    application.activation_window = mainWindow
-    mainWindow.show()
+    main_window = MainWindow.get_shared_instance()
+    application.activation_window = main_window
+    main_window.show()
     if os_name == 'nt':
         try:
             file_open_event = QFileOpenEvent(QUrl(scheme_url))

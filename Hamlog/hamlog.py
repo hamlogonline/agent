@@ -33,6 +33,10 @@ class Hamlog(Observable):
             self.update_authorization_status()
         return self._is_authorized
 
+    hamlog_callsign = None
+
+    log_callback = None
+
     def __init__(self, settings):
         super().__init__()
         self._settings = settings
@@ -59,7 +63,8 @@ class Hamlog(Observable):
         while True:
             self.log.debug(f'Requesting API key status for {self._api_key}')
             try:
-                expiration_timestamp = await self._hamlog_api.get_api_key_expiration_timestamp(self._api_key)
+                expiration_timestamp, callsign = await self._hamlog_api.get_api_key_expiration_timestamp(self._api_key)
+                self.hamlog_callsign = callsign
                 self._is_authorized = True
                 self._api_key_expiration_timestamp = expiration_timestamp
                 await async_sleep(self._AUTHORIZATION_UPDATE_TIMEOUT)
@@ -103,10 +108,9 @@ class Hamlog(Observable):
             qso_data = dataclass_as_dict(qso, dict_factory=lambda d: dict(x for x in d if x[1] is not None))
             create_task(self._hamlog_api.report_qso(self._api_key, qso_data))
 
-    def report_adif(self, adif_data):
+    def report_adif(self, qso):
         if self._has_valid_api_key():
-            self.log.debug(f'Reporting ADIF {adif_data}')
-            create_task(self._hamlog_api.report_adif(self._api_key, adif_data))
+            create_task(self._hamlog_api.report_adif(self._api_key, qso, self.log_callback))
 
     def process_url_scheme(self, url):
         self.log.debug(f'Processing URL scheme request: {url}')

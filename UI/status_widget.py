@@ -23,7 +23,6 @@ class StatusWidget(QWidget):
         status_vbox_layout.addWidget(self.authorization_button)
         status_group_box.setLayout(status_vbox_layout)
         layout.addWidget(status_group_box)
-        layout.addStretch()
         self.setLayout(layout)
 
     def update_ui(self):
@@ -38,7 +37,7 @@ class StatusWidget(QWidget):
             self.authorization_button.setEnabled(False)
         else:
             if is_authorized:
-                self.status_label.setText(self.tr("Authorized"))
+                self.status_label.setText(self.tr("Authorized as ") + hamlog.hamlog_callsign)
                 self.authorization_button.setText(self.tr("Deauthorize"))
                 self.authorization_button.clicked.connect(self.deauthorize_click)
             else:

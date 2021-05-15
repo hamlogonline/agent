@@ -68,12 +68,13 @@ class HamlogAPI():
         })
         if self.is_successful(response):
             self.log.debug('API key is valid')
+            callsign = response.get('CALLSIGN')
             expiration_date_string = response.get('EXPIRES')
             if expiration_date_string is not None:
                 try:
                     expiration_timestamp = int(expiration_date_string)
                     self.log.debug(f'API key expires on {expiration_timestamp}')
-                    return expiration_timestamp
+                    return expiration_timestamp, callsign
                 except:
                     self.log.exception('Failed to parse expiration date')
             self.log.warning('Key expiration date is missing in response')
@@ -99,15 +100,20 @@ class HamlogAPI():
         if not self.is_successful(response):
             raise HamlogAPIAuthorizationError(self.get_response_error(response))
 
-    async def report_adif(self, api_key, adif_data):
+    async def report_adif(self, api_key, qso, log_callback):
+        adif_data = qso.as_adif()
+        self.log.info(f'REPORTING ADIF: {adif_data}')
         response = await self._send_request({
             'ADIFADD': {
                 'APIKEY' : api_key,
                 'ADIFDATA': adif_data
             }
         })
-        if not self.is_successful(response):
-            raise HamlogAPIAuthorizationError(self.get_response_error(response))
+        # TODO: decouple the code below
+        # TODO: implement deferred reporting
+        if log_callback:
+            status = 'OK' if self.is_successful(response) else self.get_response_error(response)
+            log_callback(qso.call, qso.datetime_off, qso.band_tx, qso.mode, status)
 
     def authorize(self):
         try:

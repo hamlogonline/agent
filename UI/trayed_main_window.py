@@ -46,3 +46,11 @@ class TrayedMainWindow(QMainWindow):
     def closeEvent(self, event):
         event.ignore()
         self.hide()
+
+    _shared_instance = None
+
+    @classmethod
+    def get_shared_instance(cls):
+        if not cls._shared_instance:
+            cls._shared_instance = cls()
+        return cls._shared_instance
