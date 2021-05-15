@@ -13,8 +13,8 @@ class QSOListener():
         def report_qso(self, qso):
             self.callback.report_qso(qso)
 
-        def report_adif(self, adif_data):
-            self.callback.report_adif(adif_data)
+        def report_adif(self, qso):
+            self.callback.report_adif(qso)
 
     def __init__(self, callback):
         super().__init__()

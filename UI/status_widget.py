@@ -23,7 +23,6 @@ class StatusWidget(QWidget):
         status_vbox_layout.addWidget(self.authorization_button)
         status_group_box.setLayout(status_vbox_layout)
         layout.addWidget(status_group_box)
-        layout.addStretch()
         self.setLayout(layout)
 
     def update_ui(self):
