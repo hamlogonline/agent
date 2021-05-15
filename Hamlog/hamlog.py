@@ -33,6 +33,8 @@ class Hamlog(Observable):
             self.update_authorization_status()
         return self._is_authorized
 
+    log_callback = None
+
     def __init__(self, settings):
         super().__init__()
         self._settings = settings
@@ -105,7 +107,7 @@ class Hamlog(Observable):
 
     def report_adif(self, qso):
         if self._has_valid_api_key():
-            create_task(self._hamlog_api.report_adif(self._api_key, qso))
+            create_task(self._hamlog_api.report_adif(self._api_key, qso, self.log_callback))
 
     def process_url_scheme(self, url):
         self.log.debug(f'Processing URL scheme request: {url}')

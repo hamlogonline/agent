@@ -13,6 +13,8 @@ from Utils import with_log, get_resource_path
 
 from datetime import datetime
 
+from Hamlog import hamlog
+
 @with_log
 class MainWindow(TrayedMainWindow):
 
@@ -21,6 +23,7 @@ class MainWindow(TrayedMainWindow):
     def __init__(self):
         super().__init__()
         self._create_ui()
+        hamlog.log_callback = self.log_qso
         self.log.info(f'{APPLICATION_NAME} {APPLICATION_VERSION} started')
 
     def _create_ui(self):
@@ -43,4 +46,4 @@ class MainWindow(TrayedMainWindow):
         self.setCentralWidget(central_widget)
 
     def log_qso(self, callsign, datetime, band, mode, status):
-        self._signal.emit(callsign, datetime.strftime('%Y-%m-%d %H:%M:%S'), band, mode, status)
+        self.log_qso_signal.emit(callsign, datetime.strftime('%Y-%m-%d %H:%M:%S'), band, mode, status)

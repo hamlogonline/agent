@@ -93,7 +93,7 @@ class HamlogAPI():
         if not self.is_successful(response):
             raise HamlogAPIAuthorizationError(self.get_response_error(response))
 
-    async def report_adif(self, api_key, qso):
+    async def report_adif(self, api_key, qso, log_callback):
         adif_data = qso.as_adif()
         self.log.info(f'REPORTING ADIF: {adif_data}')
         response = await self._send_request({
@@ -102,8 +102,11 @@ class HamlogAPI():
                 'ADIFDATA': adif_data
             }
         })
-        if not self.is_successful(response):
-            raise HamlogAPIAuthorizationError(self.get_response_error(response))
+        # TODO: decouple the code below
+        # TODO: implement deferred reporting
+        if log_callback:
+            status = 'OK' if self.is_successful(response) else self.get_response_error(response)
+            log_callback(qso.call, qso.datetime_off, qso.band_tx, qso.mode, status)
 
     def authorize(self):
         try:

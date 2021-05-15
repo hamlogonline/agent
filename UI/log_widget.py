@@ -37,10 +37,10 @@ class LogWidget(QWidget):
         table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         table_widget.verticalHeader().setVisible(False)
         return table_widget
-        
+
     def log_qso(self, callsign, datetime, band, mode, status):
-        row_cout = self.log_table_widget.rowCount()
-        if row_cout == self.MAX_LOG_SIZE:
+        row_count = self.log_table_widget.rowCount()
+        if row_count == self.MAX_LOG_SIZE:
             self.log_table_widget.removeRow(row_count - 1)
         color = Qt.green if status == 'OK' else Qt.red
         self.log_table_widget.insertRow(0)
