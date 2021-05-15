@@ -51,3 +51,4 @@ class LogWidget(QWidget):
         self.log_table_widget.setItem(0, 4, QTableWidgetItem(status))
         for column_index in range(self.log_table_widget.columnCount()):
             self.log_table_widget.item(0, column_index).setBackground(color)
+        self.log_table_widget.scrollToTop()

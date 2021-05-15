@@ -62,12 +62,13 @@ class HamlogAPI():
         })
         if self.is_successful(response):
             self.log.debug('API key is valid')
+            callsign = response.get('CALLSIGN')
             expiration_date_string = response.get('EXPIRES')
             if expiration_date_string is not None:
                 try:
                     expiration_timestamp = int(expiration_date_string)
                     self.log.debug(f'API key expires on {expiration_timestamp}')
-                    return expiration_timestamp
+                    return expiration_timestamp, callsign
                 except:
                     self.log.exception('Failed to parse expiration date')
             self.log.warning('Key expiration date is missing in response')

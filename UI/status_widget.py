@@ -37,7 +37,7 @@ class StatusWidget(QWidget):
             self.authorization_button.setEnabled(False)
         else:
             if is_authorized:
-                self.status_label.setText(self.tr("Authorized"))
+                self.status_label.setText(self.tr("Authorized as ") + hamlog.hamlog_callsign)
                 self.authorization_button.setText(self.tr("Deauthorize"))
                 self.authorization_button.clicked.connect(self.deauthorize_click)
             else:

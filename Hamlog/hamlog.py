@@ -33,6 +33,8 @@ class Hamlog(Observable):
             self.update_authorization_status()
         return self._is_authorized
 
+    hamlog_callsign = None
+
     log_callback = None
 
     def __init__(self, settings):
@@ -61,7 +63,8 @@ class Hamlog(Observable):
         while True:
             self.log.debug(f'Requesting API key status for {self._api_key}')
             try:
-                expiration_timestamp = await self._hamlog_api.get_api_key_expiration_timestamp(self._api_key)
+                expiration_timestamp, callsign = await self._hamlog_api.get_api_key_expiration_timestamp(self._api_key)
+                self.hamlog_callsign = callsign
                 self._is_authorized = True
                 self._api_key_expiration_timestamp = expiration_timestamp
                 await async_sleep(self._AUTHORIZATION_UPDATE_TIMEOUT)
