@@ -3,6 +3,7 @@ from .hamlog_api import HamlogAPIAuthorizationError as HamlogAPIAuthorizationErr
 from .hamlog_api import HamlogAPIConnectionError as HamlogAPIConnectionError
 from .hamlog_qso import HamlogQSO as HamlogQSO
 from .wsjtx_qso_listener import WsjtxQsoListener
+from .xmlrpc_listener import XMLRPCListener
 from .hamlog import Hamlog as Hamlog
 
 from settings import application_settings

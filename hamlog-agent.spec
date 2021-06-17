@@ -1,11 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-block_cipher = None
+from PyInstaller.utils.hooks import collect_data_files
+print(collect_data_files('aiohttp_xmlrpc'))
 
+block_cipher = None
 
 a = Analysis(['hamlog-agent.py'],
              binaries=[],
-             datas=[('res', 'res')],
+             datas=[('res', 'res')] + collect_data_files('aiohttp_xmlrpc'),
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],

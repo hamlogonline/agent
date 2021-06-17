@@ -2,7 +2,7 @@ from asyncio import create_task, sleep as async_sleep, CancelledError as Asyncio
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 from dataclasses import asdict as dataclass_as_dict
-from Hamlog import HamlogAPI, HamlogAPIAuthorizationError, HamlogAPIConnectionError, HamlogQSO, WsjtxQsoListener
+from Hamlog import HamlogAPI, HamlogAPIAuthorizationError, HamlogAPIConnectionError, HamlogQSO, WsjtxQsoListener, XMLRPCListener
 from Utils import with_log, Observable
 
 @with_log
@@ -43,6 +43,7 @@ class Hamlog(Observable):
         self._is_authorized = None
         self._hamlog_api = HamlogAPI()
         self._authorization_status_update_task = None
+        self._xmlrpc_listener = XMLRPCListener()
         self._listeners = list()
 
     def _has_valid_api_key(self):
@@ -135,6 +136,8 @@ class Hamlog(Observable):
         return False
 
     async def start_listeners(self):
+        await self._xmlrpc_listener.stop()
+        await self._xmlrpc_listener.start()
         for listener in self._listeners:
             listener.stop()
         self._listeners = list()
