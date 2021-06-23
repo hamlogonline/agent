@@ -1,12 +1,13 @@
 from PySide2.QtCore import Slot
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QTableWidget, QAbstractItemView, QTableWidgetItem, QHeaderView
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QTableWidget, QAbstractItemView, QTableWidgetItem, QHeaderView, QMessageBox
 from PySide2.QtGui import Qt
 
 from Utils import with_log
 
+
 @with_log
 class LogWidget(QWidget):
-    
+
     MAX_LOG_SIZE = 100
 
     def __init__(self):
@@ -51,4 +52,4 @@ class LogWidget(QWidget):
         self.log_table_widget.setItem(0, 4, QTableWidgetItem(status))
         for column_index in range(self.log_table_widget.columnCount()):
             self.log_table_widget.item(0, column_index).setBackground(color)
-        self.log_table_widget.scrollToTop()
+        self._table_widget.scrollToTop()

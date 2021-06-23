@@ -50,6 +50,7 @@ class Hamlog(Observable):
     hamlog_callsign = None
 
     log_callback = None
+    unauthorized_qso_callback = None
 
     def __init__(self, settings):
         super().__init__()
@@ -139,8 +140,12 @@ class Hamlog(Observable):
             if self._has_valid_api_key():
                 self._hamlog_api.report_adif(self._api_key, adif_data)
             else:
-                raise ValueError('Not authorized')
-        except (HamlogAPIError, ValueError) as e:
+                raise HamlogAPIAuthorizationError('Not authorized')
+        except HamlogAPIAuthorizationError as e:
+            status = str(e)
+            if self.unauthorized_qso_callback:
+                self.unauthorized_qso_callback()
+        except (HamlogAPIError) as e:
             status = str(e)
         if self.log_callback:
             self.log_callback(qso.call, qso.datetime_off,
