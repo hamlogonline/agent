@@ -1,4 +1,5 @@
 from .hamlog_api import HamlogAPI as HamlogAPI
+from .hamlog_api import HamlogAPIError as HamlogAPIError
 from .hamlog_api import HamlogAPIAuthorizationError as HamlogAPIAuthorizationError
 from .hamlog_api import HamlogAPIConnectionError as HamlogAPIConnectionError
 from .hamlog_qso import HamlogQSO as HamlogQSO

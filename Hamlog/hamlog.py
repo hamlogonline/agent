@@ -2,7 +2,7 @@ from asyncio import create_task, sleep as async_sleep, CancelledError as Asyncio
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 from dataclasses import asdict as dataclass_as_dict
-from Hamlog import HamlogAPI, HamlogAPIAuthorizationError, HamlogAPIConnectionError, HamlogQSO, WsjtxQsoListener, XMLRPCListener
+from Hamlog import HamlogAPI, HamlogAPIError, HamlogAPIAuthorizationError, HamlogAPIConnectionError, HamlogQSO, WsjtxQsoListener, XMLRPCListener
 from Utils import with_log, Observable
 from packaging.version import Version
 from constants import APPLICATION_VERSION
@@ -129,9 +129,22 @@ class Hamlog(Observable):
             create_task(self._hamlog_api.report_qso(self._api_key, qso_data))
 
     def report_adif(self, qso):
-        if self._has_valid_api_key():
-            create_task(self._hamlog_api.report_adif(
-                self._api_key, qso, self.log_callback))
+        create_task(self._report_adif_task(qso))
+
+    async def _report_adif_task(self, qso):
+        adif_data = qso.as_adif()
+        self.log.info(f'REPORTING ADIF: {adif_data}')
+        status = 'OK'
+        try:
+            if self._has_valid_api_key():
+                self._hamlog_api.report_adif(self._api_key, adif_data)
+            else:
+                raise ValueError('Not authorized')
+        except (HamlogAPIError, ValueError) as e:
+            status = str(e)
+        if self.log_callback:
+            self.log_callback(qso.call, qso.datetime_off,
+                              qso.band_tx, qso.mode, status)
 
     def process_url_scheme(self, url):
         self.log.debug(f'Processing URL scheme request: {url}')
