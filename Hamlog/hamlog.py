@@ -15,6 +15,7 @@ class Hamlog(Observable):
 
     _API_RETRY_TIMEUOT = 3
     _AUTHORIZATION_UPDATE_TIMEOUT = 10
+    _DEFERRED_QSO_REPORT_TIMEOUT = 10
 
     @property
     def _api_key(self):
@@ -61,6 +62,7 @@ class Hamlog(Observable):
         self._latest_version = None
         self._hamlog_api = HamlogAPI()
         self._authorization_status_update_task = None
+        self._deferred_qso_report_task = None
         self._xmlrpc_listener = XMLRPCListener()
         self._listeners = list()
 
@@ -96,6 +98,28 @@ class Hamlog(Observable):
                 break
             except HamlogAPIConnectionError:
                 async_sleep(self._API_REQUEST_RETRY_TIMEUOT)
+
+    async def _report_deferred_qso_task(self):
+        while True:
+            try:
+                deferred_qsos = []
+                with open(self.deferred_qso_filename, 'r') as deferred_qso_file:
+                    deferred_qsos = deferred_qso_file.read().splitlines(True)
+                if deferred_qsos:
+                    adif_data = deferred_qsos[0]
+                    if self._is_authorized:
+                        self.log.info(f'REPORTING DEFERRED ADIF: {adif_data}')
+                        try:
+                            await self._hamlog_api.report_adif(self._api_key, adif_data)
+                        except HamlogAPIAuthorizationError:
+                            self.log.warning(
+                                f'Skiping last deferred ADIF due to authorization issue')
+                        with open(self.deferred_qso_filename, 'w') as deferred_qso_file:
+                            deferred_qso_file.writelines(deferred_qsos[1:])
+                            continue
+                await async_sleep(self._DEFERRED_QSO_REPORT_TIMEOUT)
+            except:
+                await async_sleep(self._DEFERRED_QSO_REPORT_TIMEOUT)
 
     def update_api_key(self, new_api_key):
         self.log.info(f'Got new API key: {new_api_key}')
@@ -182,6 +206,11 @@ class Hamlog(Observable):
     async def start_listeners(self):
         await self._xmlrpc_listener.stop()
         await self._xmlrpc_listener.start()
+        if self._deferred_qso_report_task:
+            self._deferred_qso_report_task.cancel()
+            self._deferred_qso_report_task = None
+        self._deferred_qso_report_task = create_task(
+            self._report_deferred_qso_task())
         for listener in self._listeners:
             listener.stop()
         self._listeners = list()

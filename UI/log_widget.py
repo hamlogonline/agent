@@ -43,7 +43,7 @@ class LogWidget(QWidget):
         row_count = self.log_table_widget.rowCount()
         if row_count == self.MAX_LOG_SIZE:
             self.log_table_widget.removeRow(row_count - 1)
-        color = Qt.green if status == 'OK' else Qt.red
+        color = Qt.green if status == 'OK' else Qt.yellow
         self.log_table_widget.insertRow(0)
         self.log_table_widget.setItem(0, 0, QTableWidgetItem(callsign))
         self.log_table_widget.setItem(0, 1, QTableWidgetItem(datetime))
