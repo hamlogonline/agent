@@ -1,5 +1,5 @@
 from PySide2.QtCore import Slot
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QTableWidget, QAbstractItemView, QTableWidgetItem, QHeaderView, QMessageBox
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QGroupBox, QTableWidget, QAbstractItemView, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import Qt
 
 from Utils import with_log
