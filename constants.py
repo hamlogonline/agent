@@ -5,6 +5,7 @@ APPLICATION_ORGANIZATION_DOMAIN = 'com.hamlog.agent'
 APPLICATION_VERSION = '0.0.7'
 
 APPLICATION_LOG_FILE_NAME = 'hamlog-agent-log.txt'
+APPLICATION_DEFERRED_QSO_FILE_NAME = 'deferred-qso.adi'
 APPLICATION_LOG_FORMAT = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
 
 XMLRPC_LISTEN_HOST = 'localhost'

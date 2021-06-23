@@ -54,7 +54,7 @@ class HamlogAPI():
                     json_response = await response.json()
                     self.log.debug(f'Got JSON response: {json_response}')
                     return json_response
-            await closed_event.wait()
+                await closed_event.wait()
         except Exception as e:
             self.log.exception('Failed to perform API request')
             raise HamlogAPIConnectionError('Failed to perform API request', e)

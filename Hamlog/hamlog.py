@@ -1,3 +1,5 @@
+from PySide2.QtCore import QStandardPaths
+from pathlib import Path
 from asyncio import create_task, sleep as async_sleep, CancelledError as AsyncioCancelledError
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
@@ -5,7 +7,7 @@ from dataclasses import asdict as dataclass_as_dict
 from Hamlog import HamlogAPI, HamlogAPIError, HamlogAPIAuthorizationError, HamlogAPIConnectionError, HamlogQSO, WsjtxQsoListener, XMLRPCListener
 from Utils import with_log, Observable
 from packaging.version import Version
-from constants import APPLICATION_VERSION
+from constants import APPLICATION_VERSION, APPLICATION_DEFERRED_QSO_FILE_NAME
 
 
 @with_log
@@ -136,20 +138,24 @@ class Hamlog(Observable):
         adif_data = qso.as_adif()
         self.log.info(f'REPORTING ADIF: {adif_data}')
         status = 'OK'
+        qso_logged = False
         try:
             if self._has_valid_api_key():
-                self._hamlog_api.report_adif(self._api_key, adif_data)
+                await self._hamlog_api.report_adif(self._api_key, adif_data)
+                qso_logged = True
             else:
                 raise HamlogAPIAuthorizationError('Not authorized')
         except HamlogAPIAuthorizationError as e:
             status = str(e)
             if self.unauthorized_qso_callback:
                 self.unauthorized_qso_callback()
-        except (HamlogAPIError) as e:
+        except Exception as e:
             status = str(e)
         if self.log_callback:
             self.log_callback(qso.call, qso.datetime_off,
                               qso.band_tx, qso.mode, status)
+        if not qso_logged:
+            self.store_deferred_qso(qso)
 
     def process_url_scheme(self, url):
         self.log.debug(f'Processing URL scheme request: {url}')
@@ -182,3 +188,17 @@ class Hamlog(Observable):
         wsjtx_qso_listener = WsjtxQsoListener(self)
         self._listeners.append(wsjtx_qso_listener)
         await wsjtx_qso_listener.start()
+
+    @property
+    def deferred_qso_filename(self):
+        app_data_location = QStandardPaths.writableLocation(
+            QStandardPaths.AppDataLocation)
+        return Path(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)).joinpath(
+            APPLICATION_DEFERRED_QSO_FILE_NAME)
+
+    def store_deferred_qso(self, qso):
+        try:
+            with open(self.deferred_qso_filename, 'a') as deferred_qso_file:
+                deferred_qso_file.write(qso.as_adif()+'\n')
+        except Exception as e:
+            self.log.warning(f'Failed to store deferred ADIF data: {e}')
