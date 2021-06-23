@@ -1,12 +1,15 @@
+from logging import INFO as APPLICATION_LOG_LEVEL
 APPLICATION_NAME = 'HAMLOG Agent'
 APPLICATION_ORGANIZATION_NAME = 'HAMLOG LLC'
 APPLICATION_ORGANIZATION_DOMAIN = 'com.hamlog.agent'
-APPLICATION_VERSION = '0.0.7'
+APPLICATION_VERSION = '0.0.1'
 
 APPLICATION_LOG_FILE_NAME = 'hamlog-agent-log.txt'
 APPLICATION_LOG_FORMAT = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
-from logging import INFO as APPLICATION_LOG_LEVEL
 
 XMLRPC_LISTEN_HOST = 'localhost'
 XMLRPC_LISTEN_PORT = 3773
 
+NEW_VERSION_NOTIFICATION_INTERVAL = 86400
+
+HAMLOG_UPDATE_URL = 'https://hamlog.online/account/agentinfo.php'

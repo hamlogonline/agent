@@ -10,16 +10,20 @@ from constants import APPLICATION_NAME, APPLICATION_VERSION
 
 from Utils import with_log, open_url
 
+
 class HamlogAPIError(Exception):
     def __init__(self, message, error=None):
         super().__init__(message)
         self.error = error
 
+
 class HamlogAPIAuthorizationError(HamlogAPIError):
     pass
 
+
 class HamlogAPIConnectionError(HamlogAPIError):
     pass
+
 
 @with_log
 class HamlogAPI():
@@ -36,7 +40,8 @@ class HamlogAPI():
     def __init__(self):
         super().__init__()
         if get_ca_bundle_location:
-            self._ssl_context = ssl_create_default_context(cafile=get_ca_bundle_location())
+            self._ssl_context = ssl_create_default_context(
+                cafile=get_ca_bundle_location())
         else:
             self._ssl_context = ssl_create_default_context()
 
@@ -62,7 +67,7 @@ class HamlogAPI():
 
     async def get_api_key_expiration_timestamp(self, api_key):
         response = await self._send_request({
-            'KEYSTATUS' : {
+            'KEYSTATUS': {
                 'APIKEY': api_key
             }
         })
@@ -70,11 +75,13 @@ class HamlogAPI():
             self.log.debug('API key is valid')
             callsign = response.get('CALLSIGN')
             expiration_date_string = response.get('EXPIRES')
+            latest_version = response.get('CURRENT')
             if expiration_date_string is not None:
                 try:
                     expiration_timestamp = int(expiration_date_string)
-                    self.log.debug(f'API key expires on {expiration_timestamp}')
-                    return expiration_timestamp, callsign
+                    self.log.debug(
+                        f'API key expires on {expiration_timestamp}')
+                    return expiration_timestamp, callsign, latest_version
                 except:
                     self.log.exception('Failed to parse expiration date')
             self.log.warning('Key expiration date is missing in response')
@@ -88,88 +95,93 @@ class HamlogAPI():
             }
         })
         if not self.is_successful(response):
-            raise HamlogAPIAuthorizationError(self.get_response_error(response))
+            raise HamlogAPIAuthorizationError(
+                self.get_response_error(response))
 
     async def report_qso(self, api_key, qso_data):
         response = await self._send_request({
             'QSOADD': {
-                'APIKEY' : api_key,
-                'DATA' : { k.upper(): v for k, v in qso_data.items() }
+                'APIKEY': api_key,
+                'DATA': {k.upper(): v for k, v in qso_data.items()}
             }
         })
         if not self.is_successful(response):
-            raise HamlogAPIAuthorizationError(self.get_response_error(response))
+            raise HamlogAPIAuthorizationError(
+                self.get_response_error(response))
 
     async def report_adif(self, api_key, qso, log_callback):
         adif_data = qso.as_adif()
         self.log.info(f'REPORTING ADIF: {adif_data}')
         response = await self._send_request({
             'ADIFADD': {
-                'APIKEY' : api_key,
+                'APIKEY': api_key,
                 'ADIFDATA': adif_data
             }
         })
         # TODO: decouple the code below
         # TODO: implement deferred reporting
         if log_callback:
-            status = 'OK' if self.is_successful(response) else self.get_response_error(response)
-            log_callback(qso.call, qso.datetime_off, qso.band_tx, qso.mode, status)
+            status = 'OK' if self.is_successful(
+                response) else self.get_response_error(response)
+            log_callback(qso.call, qso.datetime_off,
+                         qso.band_tx, qso.mode, status)
 
     def authorize(self):
         try:
-            assert open_url(self._AGENT_AUTHORIZATION_URL) == True                
+            assert open_url(self._AGENT_AUTHORIZATION_URL) == True
         except Exception as e:
             self.log.exception('Cannot open authorization URL')
-            raise HamlogAPIAuthorizationError('Cannot open authorization URL', e)
+            raise HamlogAPIAuthorizationError(
+                'Cannot open authorization URL', e)
 
     def _create_aiohttp_closed_event(self, session) -> AsyncioEvent:
         """Work around aiohttp issue that doesn't properly close transports on exit.                                        
-                                                                                                                            
+
         See https://github.com/aio-libs/aiohttp/issues/1925#issuecomment-639080209                                          
-                                                                                                                            
+
         Returns:                                                                                                            
         An event that will be set once all transports have been properly closed.                                         
-        """                                                                                                                 
-                                                                                                                        
-        transports = 0                                                                                                      
-        all_is_lost = AsyncioEvent()                                                                                       
-                                                                                                                        
-        def connection_lost(exc, orig_lost):                                                                                
-            nonlocal transports                                                                                             
-                                                                                                                            
-            try:                                                                                                            
-                orig_lost(exc)                                                                                              
-            finally:                                                                                                        
-                transports -= 1                                                                                             
-                if transports == 0:                                                                                         
-                    all_is_lost.set()                                                                                       
-                                                                                                                        
-        def eof_received(orig_eof_received):                                                                                
-            try:                                                                                                            
-                orig_eof_received()                                                                                         
-            except AttributeError:                                                                                          
-                # It may happen that eof_received() is called after                                                         
-                # _app_protocol and _transport are set to None.                                                             
-                pass                                                                                                        
-                                                                                                                            
-        for conn in session.connector._conns.values():                                                                      
-            for handler, _ in conn:                                                                                         
-                proto = getattr(handler.transport, "_ssl_protocol", None)                                                   
-                if proto is None:                                                                                           
-                    continue                                                                                                
-                                                                                                                            
-                transports += 1                                                                                             
-                orig_lost = proto.connection_lost                                                                           
-                orig_eof_received = proto.eof_received                                                                      
-                                                                                                                            
-                proto.connection_lost = functools.partial(                                                                  
-                    connection_lost, orig_lost=orig_lost                                                                    
-                )                                                                                                           
-                proto.eof_received = functools.partial(                                                                     
-                    eof_received, orig_eof_received=orig_eof_received                                                       
-                )                                                                                                           
-                                                                                                                            
-        if transports == 0:                                                                                                 
-            all_is_lost.set()                                                                                               
-                                                                                                                            
+        """
+
+        transports = 0
+        all_is_lost = AsyncioEvent()
+
+        def connection_lost(exc, orig_lost):
+            nonlocal transports
+
+            try:
+                orig_lost(exc)
+            finally:
+                transports -= 1
+                if transports == 0:
+                    all_is_lost.set()
+
+        def eof_received(orig_eof_received):
+            try:
+                orig_eof_received()
+            except AttributeError:
+                # It may happen that eof_received() is called after
+                # _app_protocol and _transport are set to None.
+                pass
+
+        for conn in session.connector._conns.values():
+            for handler, _ in conn:
+                proto = getattr(handler.transport, "_ssl_protocol", None)
+                if proto is None:
+                    continue
+
+                transports += 1
+                orig_lost = proto.connection_lost
+                orig_eof_received = proto.eof_received
+
+                proto.connection_lost = functools.partial(
+                    connection_lost, orig_lost=orig_lost
+                )
+                proto.eof_received = functools.partial(
+                    eof_received, orig_eof_received=orig_eof_received
+                )
+
+        if transports == 0:
+            all_is_lost.set()
+
         return all_is_lost

@@ -4,6 +4,9 @@ from urllib.parse import urlparse, parse_qs
 from dataclasses import asdict as dataclass_as_dict
 from Hamlog import HamlogAPI, HamlogAPIAuthorizationError, HamlogAPIConnectionError, HamlogQSO, WsjtxQsoListener, XMLRPCListener
 from Utils import with_log, Observable
+from packaging.version import Version
+from constants import APPLICATION_VERSION
+
 
 @with_log
 class Hamlog(Observable):
@@ -33,6 +36,17 @@ class Hamlog(Observable):
             self.update_authorization_status()
         return self._is_authorized
 
+    @property
+    def latest_version(self):
+        return self._latest_version
+
+    @property
+    def new_version_available(self):
+        try:
+            return Version(self._latest_version) > Version(APPLICATION_VERSION)
+        except:
+            return False
+
     hamlog_callsign = None
 
     log_callback = None
@@ -41,6 +55,7 @@ class Hamlog(Observable):
         super().__init__()
         self._settings = settings
         self._is_authorized = None
+        self._latest_version = None
         self._hamlog_api = HamlogAPI()
         self._authorization_status_update_task = None
         self._xmlrpc_listener = XMLRPCListener()
@@ -56,18 +71,20 @@ class Hamlog(Observable):
         if self._has_valid_api_key():
             self.log.debug('Updating authorization status')
             if self._authorization_status_update_task is None:
-                self._authorization_status_update_task = create_task(self._update_authorization_status_task())
+                self._authorization_status_update_task = create_task(
+                    self._update_authorization_status_task())
         else:
             self._is_authorized = False
-    
+
     async def _update_authorization_status_task(self):
         while True:
             self.log.debug(f'Requesting API key status for {self._api_key}')
             try:
-                expiration_timestamp, callsign = await self._hamlog_api.get_api_key_expiration_timestamp(self._api_key)
+                expiration_timestamp, callsign, latest_version = await self._hamlog_api.get_api_key_expiration_timestamp(self._api_key)
                 self.hamlog_callsign = callsign
                 self._is_authorized = True
                 self._api_key_expiration_timestamp = expiration_timestamp
+                self._latest_version = latest_version
                 await async_sleep(self._AUTHORIZATION_UPDATE_TIMEOUT)
             except HamlogAPIAuthorizationError:
                 self._is_authorized = False
@@ -83,7 +100,8 @@ class Hamlog(Observable):
             self._authorization_status_update_task.cancel()
         self._api_key = new_api_key
         self._api_key_expiration_timestamp = 0
-        self._authorization_status_update_task = create_task(self._update_authorization_status_task())
+        self._authorization_status_update_task = create_task(
+            self._update_authorization_status_task())
 
     def authorize_agent(self):
         try:
@@ -106,12 +124,14 @@ class Hamlog(Observable):
             raise ValueError('qso must be HamlogQSO or its subclass')
         if self._has_valid_api_key():
             self.log.debug(f'Reporting QSO {qso}')
-            qso_data = dataclass_as_dict(qso, dict_factory=lambda d: dict(x for x in d if x[1] is not None))
+            qso_data = dataclass_as_dict(
+                qso, dict_factory=lambda d: dict(x for x in d if x[1] is not None))
             create_task(self._hamlog_api.report_qso(self._api_key, qso_data))
 
     def report_adif(self, qso):
         if self._has_valid_api_key():
-            create_task(self._hamlog_api.report_adif(self._api_key, qso, self.log_callback))
+            create_task(self._hamlog_api.report_adif(
+                self._api_key, qso, self.log_callback))
 
     def process_url_scheme(self, url):
         self.log.debug(f'Processing URL scheme request: {url}')
